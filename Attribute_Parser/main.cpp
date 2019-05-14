@@ -95,16 +95,27 @@ public:
                     }
                     break;
                 case 'V':
-                    if(tagStr[i] == '"' && tagStr[i+1] != '>'){
+                    if(tagStr[i] == '"' && tagStr[i+1] == ' '){
                         mySwitchTrigger = 'O';
                     }else if(tagStr[i] == '"' && tagStr[i+1] == '>'){
-                        mySwitchTrigger = 'Z';
-                    }else{
+                        mySwitchTrigger = 'S';
+                    }else if(tagStr[i] == '"' && tagStr[i+1] !=' ' && tagStr[i+1] != '>'){
+                        
+                    }
+                    else{
                         myValue += tagStr[i];
                     }
                     break;
                 case 'O':
-                    
+                    tagName = myTag;
+                    tagAttribute.setAttributeName(myAttr);
+                    tagAttribute.setAttributeValue(myValue);
+                    mySwitchTrigger = 'A';
+                    break;
+                case 'S':
+                    tagName = myTag;
+                    tagAttribute.setAttributeName(myAttr);
+                    tagAttribute.setAttributeValue(myValue);
                     break;
                 default:
                     if(tagStr[i]=='<'){
@@ -129,10 +140,12 @@ int main() {
     string str;
     cout<<"str please!\n";
     getline(cin,str);
-    
+    tag testTag;
+    testTag.setTag(str);
+    testTag.printTag();
     
     string myTag,myAttr,myValue;
-    
+    /*
     char mySwitchTrigger = 'Z';
     for(int i=0;i<str.length();i++){
         switch (mySwitchTrigger){
@@ -177,6 +190,8 @@ int main() {
                 
         }
     }
+    */
+    
     cout<<"myTag:"<<myTag<<"myAttr:"<<myAttr<<"myVal:"<<myValue;
     
     

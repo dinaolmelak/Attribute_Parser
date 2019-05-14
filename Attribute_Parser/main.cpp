@@ -30,11 +30,12 @@ private:
     attribute *nextAttrPtr;
 public:
     attribute(){
-        
+        attributeName = "";
+        value = "";
     }
-    void setAttribute(string name,string value){
-        this->attributeName = name;
-        this->value = value;
+    void setAttribute(string nameIn,string valueIn){
+        attributeName = nameIn;
+        value = valueIn;
     }
     void setAttributeName(string attrNameIn){
         this->attributeName = attrNameIn;
@@ -48,8 +49,8 @@ public:
     string getAttributeValue(){
         return this->value;
     }
-    void setNextAttrPtr(attribute *nextAttr){
-        this->nextAttrPtr=nextAttr;
+    void setNextAttrPtr(attribute* attrPtr){
+        nextAttrPtr=attrPtr;
     }
     attribute* getNextAttrPtr(){
         return nextAttrPtr;
@@ -63,11 +64,22 @@ class tag{
 private:
     string tagName;
     attribute tagAttribute;
-    attribute *nextTagAttributePtr;
-    string closingTagName;
+    attribute *headAttributePtr;
 public:
     tag(){
-        nextTagAttributePtr->setNextAttrPtr(0);
+        
+        headAttributePtr = new attribute;
+        headAttributePtr->setNextAttrPtr(0);
+    }
+    attribute *getHeadAttrPtr(){
+        return headAttributePtr;
+    }
+    bool isEmpty(){
+        if (headAttributePtr->getNextAttrPtr()==0){
+            return true;
+        }else{
+            return false;
+        }
     }
     void setTag(string tagStr){
 ///<tag-name attribute1-name = "value1" attribute2-name = "value2" ...>
@@ -78,10 +90,10 @@ public:
                 case 'A':
                     if(tagStr[i] == '='&& tagStr[i+1] == ' '){
                         
-                    }else if(tagStr[i] == ' '&& tagStr[i+1]!='"'){
-                        
                     }else if(tagStr[i] == ' '&& tagStr[i+1]=='"'){
                         mySwitchTrigger = 'V';
+                    }else if(tagStr[i]==' '&&tagStr[i+1]=='='){
+                        
                     }
                     else{
                         myAttr += tagStr[i];
@@ -96,27 +108,28 @@ public:
                     break;
                 case 'V':
                     if(tagStr[i] == '"' && tagStr[i+1] == ' '){
-                        mySwitchTrigger = 'O';
+                        mySwitchTrigger = 'P';
                     }else if(tagStr[i] == '"' && tagStr[i+1] == '>'){
-                        mySwitchTrigger = 'S';
-                    }else if(tagStr[i] == '"' && tagStr[i+1] !=' ' && tagStr[i+1] != '>'){
+                        mySwitchTrigger = 'P';
+                    }else if(tagStr[i-1]==' ' && tagStr[i]=='"'){
                         
                     }
                     else{
                         myValue += tagStr[i];
                     }
                     break;
-                case 'O':
+                case 'P':
                     tagName = myTag;
-                    tagAttribute.setAttributeName(myAttr);
-                    tagAttribute.setAttributeValue(myValue);
-                    mySwitchTrigger = 'A';
+                    addAttribute(myAttr, myValue);
+                    myAttr="";
+                    myValue="";
+                    if(tagStr[i]=='>'){
+                        break;
+                    }else{
+                        mySwitchTrigger = 'A';
+                    }
                     break;
-                case 'S':
-                    tagName = myTag;
-                    tagAttribute.setAttributeName(myAttr);
-                    tagAttribute.setAttributeValue(myValue);
-                    break;
+                
                 default:
                     if(tagStr[i]=='<'){
                         mySwitchTrigger = 'T';
@@ -130,10 +143,69 @@ public:
         
     }
     void printTag(){
-        cout<<tagName<<endl<<tagAttribute.getAttributeName()<<":"<<tagAttribute.getAttributeValue()<<endl;
+        
+        attribute *currentAttrPtr = headAttributePtr->getNextAttrPtr();
+        cout<<tagName<<endl;
+        while(currentAttrPtr!=0){
+            cout<<currentAttrPtr->getAttributeName()<<":"<<currentAttrPtr->getAttributeValue()<<endl;
+            currentAttrPtr = currentAttrPtr->getNextAttrPtr();
+        }
+        /*
+        if (tagAttribute.getAttributeName()!=""&&tagAttribute.getAttributeValue()!=""&&(headAttributePtr==NULL)){
+            cout<<tagName<<endl<<tagAttribute.getAttributeName()<<":"<<tagAttribute.getAttributeValue()<<endl;
+            
+        }else if(headAttributePtr!=NULL){
+            attribute *nextAttrPtr = headAttributePtr;
+            
+            cout<<tagName<<endl<<tagAttribute.getAttributeName()<<":"<<tagAttribute.getAttributeValue()<<endl;
+            while (nextAttrPtr!=NULL){
+                
+                cout<<"     "<<nextAttrPtr->getAttributeName()<<":"<<nextAttrPtr->getAttributeValue()<<endl;
+                
+                nextAttrPtr=nextAttrPtr->getNextAttrPtr();
+            }
+        }
+        else{
+            cout<< "Their is nothing to print!\n";
+        }
+        */
         
     }
-    
+    void addAttribute(string attrName, string attrValue){
+        attribute *currentAttrPtr = headAttributePtr->getNextAttrPtr();
+        attribute *prevAttrPtr = headAttributePtr;
+        
+        while (currentAttrPtr != 0){
+            prevAttrPtr = currentAttrPtr;
+            currentAttrPtr = currentAttrPtr->getNextAttrPtr();
+        }
+        attribute *newAttribute = new attribute;
+        newAttribute->setAttributeName(attrName);
+        newAttribute->setAttributeValue(attrValue);
+        newAttribute->setNextAttrPtr(0);
+        prevAttrPtr->setNextAttrPtr(newAttribute);
+        /*
+        if(this->tagAttribute.getAttributeName()=="" &&this->tagAttribute.getAttributeValue()==""){
+            this->tagAttribute.setAttributeName(attrName);
+            this->tagAttribute.setAttributeValue(attrValue);
+            
+            
+           // prevAttrRef->setNextAttrPtr(newAttribute);
+        }else{
+            attribute *currentAttrRef =headAttributePtr;
+            attribute *prevAttrRef = headAttributePtr;
+            while(currentAttrRef!=NULL){
+                prevAttrRef = currentAttrRef;
+                currentAttrRef = currentAttrRef->getNextAttrPtr();
+            }
+            attribute *newAttribute = new attribute;
+            newAttribute->setAttributeName(attrName);
+            newAttribute->setAttributeValue(attrValue);
+            prevAttrRef->setNextAttrPtr(newAttribute);
+            
+        }
+         */
+    }
 };
 
 int main() {
@@ -144,8 +216,9 @@ int main() {
     testTag.setTag(str);
     testTag.printTag();
     
-    string myTag,myAttr,myValue;
+    
     /*
+    string myTag,myAttr,myValue;
     char mySwitchTrigger = 'Z';
     for(int i=0;i<str.length();i++){
         switch (mySwitchTrigger){
@@ -192,7 +265,6 @@ int main() {
     }
     */
     
-    cout<<"myTag:"<<myTag<<"myAttr:"<<myAttr<<"myVal:"<<myValue;
     
     
     return 0;
